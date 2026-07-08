@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🐭 Zoo Mouse? 🐭</title>
+
+<!-- Cute rounded Google Fonts: Baloo 2 for big playful headings, Quicksand for body text -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS — tweak these to re-skin the whole page
+     ============================================================ */
+  :root{
+    --pink:        #ffd7e6;   /* light pink   */
+    --pink-deep:   #ff8fb3;   /* buttons/accents */
+    --pink-deeper: #ff6a9c;   /* hover state */
+    --cream:       #fff8ef;   /* background base */
+    --blue:        #cdeaf9;   /* light blue */
+    --blue-deep:   #a9dcf2;
+    --text-main:   #6a4a57;   /* soft plum-brown, readable on pastels */
+    --white:       #ffffff;
+    --shadow:      0 8px 24px rgba(255, 140, 170, 0.25);
+    --radius-lg:   22px;
+    --radius-pill: 999px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  body{
+    font-family: 'Quicksand', sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    /* Soft dreamy pastel gradient backdrop */
+    background: linear-gradient(160deg, var(--cream) 0%, var(--pink) 55%, var(--blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* ============================================================
+     DECORATIVE BACKGROUND BLOBS (signature soft, organic shapes)
+     ============================================================ */
+  .blob{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.55;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .blob--1{ width: 320px; height: 320px; top: -80px; left: -100px; background: var(--blue-deep); }
+  .blob--2{ width: 260px; height: 260px; bottom: -60px; right: -80px; background: var(--pink-deep); }
+  .blob--3{ width: 180px; height: 180px; top: 40%; right: -60px; background: var(--pink); }
+
+  /* ============================================================
+     FLOATING HEARTS (ambient background animation)
+     ============================================================ */
+  #hearts-container{
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .floating-heart{
+    position: absolute;
+    bottom: -10%;
+    animation-name: floatUp;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
+    opacity: 0.8;
+  }
+  @keyframes floatUp{
+    0%   { transform: translateY(0) translateX(0) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.85; }
+    50%  { transform: translateY(-55vh) translateX(15px) rotate(10deg); }
+    100% { transform: translateY(-110vh) translateX(-15px) rotate(-8deg); opacity: 0; }
+  }
+
+  /* ============================================================
+     MAIN CARD
+     ============================================================ */
+  .page-stack{
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 480px;
+    margin: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .card{
+    width: 100%;
+    padding: clamp(24px, 5vw, 44px);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(6px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    text-align: center;
+    animation: fadeIn 0.9s ease both;
+  }
+
+  /* 🐭 Mouse emoji "portal" — appears above the card once you say Yes;
+     click it to open the full-screen mouse-popping room */
+  .mouse-portal-btn{
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: clamp(2.4rem, 9vw, 3.2rem);
+    line-height: 1;
+    filter: drop-shadow(0 6px 14px rgba(255, 140, 170, 0.4));
+    transition: transform 0.25s ease;
+  }
+  .mouse-portal-btn:hover{ transform: scale(1.15) rotate(-6deg); }
+  .mouse-portal-btn:active{ transform: scale(0.9); }
+  .mouse-portal-btn:focus-visible{
+    outline: 3px solid var(--blue-deep);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  /* Row that holds the emoji "portals" above the card — mouse first,
+     then heart once the mouse minigame has been completed */
+  .portal-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+  }
+
+  /* 💖 Heart emoji "portal" — appears above the card once the mouse
+     minigame is fully finished; click it to open the heart room */
+  .heart-portal-btn{
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: clamp(2.4rem, 9vw, 3.2rem);
+    line-height: 1;
+    filter: drop-shadow(0 6px 14px rgba(255, 140, 170, 0.4));
+    transition: transform 0.25s ease;
+  }
+  .heart-portal-btn:hover{ transform: scale(1.15) rotate(6deg); }
+  .heart-portal-btn:active{ transform: scale(0.9); }
+  .heart-portal-btn:focus-visible{
+    outline: 3px solid var(--blue-deep);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  /* 🦒 Zoo-animal-match emoji "portal" — appears above the card once the
+     heart minigame is fully finished; click it to open the memory-match room */
+  .zoo-match-portal-btn{
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: clamp(2.4rem, 9vw, 3.2rem);
+    line-height: 1;
+    filter: drop-shadow(0 6px 14px rgba(255, 140, 170, 0.4));
+    transition: transform 0.25s ease;
+  }
+  .zoo-match-portal-btn:hover{ transform: scale(1.15) rotate(-6deg); }
+  .zoo-match-portal-btn:active{ transform: scale(0.9); }
+  .zoo-match-portal-btn:focus-visible{
+    outline: 3px solid var(--blue-deep);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  /* Each screen (question / celebration) is its own flex column.
+     THIS "gap" is what actually spaces out the GIF, text, and buttons —
+     increase it for more breathing room between items, decrease for less. */
+  .screen{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+  }
+
+  @keyframes fadeIn{
+    from{ opacity: 0; transform: translateY(16px) scale(0.98); }
+    to  { opacity: 1; transform: none; }
+  }
+
+  /* The cute GIF up top */
+  .hero-gif{
+    width: 210px;
+    height: 210px;
+    object-fit: cover;
+    border-radius: 10%;
+    border: 6px solid var(--pink-deep);
+    box-shadow: 0 6px 18px rgba(255, 140, 170, 0.35);
+  }
+
+  /* Big playful question text */
+  .question-text{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    line-height: 1.35;
+    margin: 0;
+    white-space: pre-line; /* respects the \n line break in the JS text */
+  }
+
+  .subtext{
+    font-size: clamp(0.95rem, 3vw, 1.1rem);
+    font-weight: 600;
+    color: var(--text-main);
+    opacity: 0.85;
+    margin: 0;
+  }
+
+  /* ============================================================
+     BUTTONS
+     ============================================================ */
+  .button-row{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center; /* stops buttons from stretching to fill min-height below */
+    gap: 26px;
+    justify-content: center;
+    margin-top: 8px;
+    min-height: 90px;
+    width: 100%;
+  }
+
+  .btn{
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(1.1rem, 4vw, 1.35rem);
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 16px 34px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, opacity 0.4s ease;
+    will-change: transform;
+  }
+  .btn:hover{
+    transform: scale(1.08);
+    box-shadow: 0 10px 26px rgba(255, 120, 160, 0.4);
+  }
+  .btn:focus-visible{
+    outline: 3px solid var(--blue-deep);
+    outline-offset: 3px;
+  }
+  .btn:active{ transform: scale(0.96); }
+
+  .btn-yes{
+    background: var(--pink-deep);
+    color: var(--white);
+  }
+  .btn-yes:hover{ background: var(--pink-deeper); }
+
+  .btn-yes.btn-yes--eager{
+    /* Applied once the No button has fully vanished */
+    transform: scale(1.18);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .btn-yes.btn-yes--eager:hover{ transform: scale(1.26); }
+
+  @keyframes pulse{
+    0%, 100% { box-shadow: 0 8px 24px rgba(255, 140, 170, 0.35); }
+    50%      { box-shadow: 0 8px 34px rgba(255, 140, 170, 0.6); }
+  }
+
+  .btn-no{
+    background: var(--blue);
+    color: var(--text-main);
+    /* Shrinks in place with each click via JS (transform: scale(...)) —
+       it stays centered in the button row the whole time. */
+  }
+  .btn-no:hover{ background: var(--blue-deep); }
+
+  .btn-calendar{
+    display: inline-block;
+    background: var(--blue);
+    color: var(--text-main);
+    text-decoration: none;
+  }
+  .btn-calendar:hover{ background: var(--blue-deep); }
+
+  /* ============================================================
+     CELEBRATION SCREEN
+     ============================================================ */
+  .hidden{ display: none !important; }
+
+  .celebration-text{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 4.6vw, 1.9rem);
+    line-height: 1.4;
+    margin: 0;
+    animation: fadeIn 0.8s ease both;
+  }
+
+  /* ============================================================
+     CONFETTI
+     ============================================================ */
+  #confetti-container{
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .confetti-piece{
+    position: absolute;
+    top: -10px;
+    border-radius: 2px;
+    animation-name: confettiFall;
+    animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+    animation-iteration-count: 1;
+  }
+  @keyframes confettiFall{
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(360deg); opacity: 0.9; }
+  }
+
+  /* ============================================================
+     CURSOR-FOLLOWING IMAGE — appears once the "No" button has
+     fully vanished, then smoothly trails the cursor with a delay.
+     👉 Adjust its size with CONFIG.followerImageSize in the JS below.
+     ============================================================ */
+  .cursor-follower{
+    position: fixed;
+    top: 0;
+    left: 0;
+    object-fit: contain;
+    pointer-events: none;   /* never blocks clicks underneath it */
+    z-index: 999;
+    transform: translate(-50%, -50%); /* centers the image on its tracked point */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .cursor-follower.visible{ opacity: 1; }
+
+  /* ============================================================
+     MOUSE POPPING GAME — full-screen room of poppable mice,
+     opened from the mouse-portal emoji on the celebration screen
+     ============================================================ */
+  .mouse-game-screen{
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--cream) 0%, var(--pink) 55%, var(--blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mouse-game-back{
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 52;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 1rem;
+    background: var(--white);
+    color: var(--text-main);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+  }
+  .mouse-game-back:hover{ transform: scale(1.05); }
+  .mouse-game-back:active{ transform: scale(0.95); }
+
+  /* Fixed 7x7 array, centered in the middle of the screen (not filling it) —
+     👉 change MOUSE_GRID_SIZE in the JS CONFIG below to resize the array */
+  .mouse-grid{
+    display: grid;
+    grid-template-columns: repeat(7, clamp(36px, 10vw, 58px));
+    grid-template-rows: repeat(7, clamp(36px, 10vw, 58px));
+    gap: clamp(4px, 1.5vw, 12px);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(6px);
+    padding: clamp(14px, 3vw, 26px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .mouse-cell{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.3rem, 6vw, 2rem);
+    background: none;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+  .mouse-cell:hover{ transform: scale(1.25); }
+
+  .mouse-cell.popped{
+    cursor: default;
+    pointer-events: none;
+    animation: mousePop 0.32s ease forwards;
+  }
+  @keyframes mousePop{
+    0%   { transform: scale(1);   opacity: 1; }
+    40%  { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(0);   opacity: 0; }
+  }
+
+  /* 🎉 Congratulations popup shown once all 49 mice are popped —
+     gif, text, and sound are all set from CONFIG in the JS below */
+  .mouse-game-complete{
+    position: fixed;
+    inset: 0;
+    z-index: 51;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease both;
+  }
+  .mouse-game-complete-text{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    margin: 0;
+  }
+  .mouse-game-replay{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: var(--pink-deep);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 14px 30px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease;
+  }
+  .mouse-game-replay:hover{ transform: scale(1.06); }
+  .mouse-game-replay:active{ transform: scale(0.95); }
+
+  /* ============================================================
+     HEART MINIGAME — a single heart in the middle of the screen
+     that throbs and grows with every click, opened from the heart
+     emoji on the celebration screen (appears once the mouse game
+     is finished)
+     ============================================================ */
+  .heart-game-screen{
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--cream) 0%, var(--pink) 55%, var(--blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heart-game-back{
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 62;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 1rem;
+    background: var(--white);
+    color: var(--text-main);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+  }
+  .heart-game-back:hover{ transform: scale(1.05); }
+  .heart-game-back:active{ transform: scale(0.95); }
+
+  /* 👉 Font-size (i.e. how big the heart looks) is set from JS on every
+     click, growing from CONFIG.heartGameStartSizeVmin up to
+     CONFIG.heartGameMaxSizeVmin over CONFIG.heartGameMaxClicks clicks */
+  .heart-game-heart{
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    filter: drop-shadow(0 10px 26px rgba(255, 90, 140, 0.45));
+    transition: font-size 0.25s ease;
+  }
+
+  /* Quick "throb" pulse layered on top of the growth every time it's
+     clicked — the class is re-added via JS so it can replay on repeat clicks */
+  .heart-game-heart.throb{
+    animation: heartThrob 0.35s ease;
+  }
+  @keyframes heartThrob{
+    0%   { transform: scale(1);    }
+    35%  { transform: scale(1.28); }
+    100% { transform: scale(1);    }
+  }
+
+  /* 💌 Shown once the heart has been clicked CONFIG.heartGameMaxClicks
+     times — text is set from CONFIG.heartGameCompleteText in the JS below */
+  .heart-game-complete{
+    position: fixed;
+    inset: 0;
+    z-index: 61;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease both;
+  }
+  .heart-game-complete-text{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 6vw, 2.4rem);
+    margin: 0;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.85);
+    padding: 18px 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* ============================================================
+     ZOO ANIMAL MEMORY MATCH — flip cards in the middle of the
+     screen, opened from the giraffe emoji on the celebration
+     screen (appears once the heart game is finished)
+     ============================================================ */
+  .zoo-match-screen{
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--cream) 0%, var(--pink) 55%, var(--blue) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .zoo-match-back{
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 72;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 1rem;
+    background: var(--white);
+    color: var(--text-main);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+  }
+  .zoo-match-back:hover{ transform: scale(1.05); }
+  .zoo-match-back:active{ transform: scale(0.95); }
+
+  /* 👉 grid-template-columns is set from JS to fit however many cards
+     CONFIG.zooMatchEmojis produces (2 cards per emoji listed) */
+  .zoo-match-grid{
+    display: grid;
+    gap: clamp(6px, 1.5vw, 14px);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(6px);
+    padding: clamp(14px, 3vw, 26px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  .zoo-match-card{
+    width: clamp(46px, 11vw, 72px);
+    height: clamp(46px, 11vw, 72px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    background: var(--white);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s ease;
+  }
+  .zoo-match-card:hover{ transform: scale(1.06); }
+
+  /* Quick "flip" squish played whenever a card's face is swapped —
+     re-triggered via JS (remove class, force reflow, re-add) so it can
+     replay on the same card across multiple rounds */
+  .zoo-match-card.flipping{
+    animation: zooCardFlip 0.3s ease;
+  }
+  @keyframes zooCardFlip{
+    0%   { transform: scaleX(1); }
+    50%  { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+  }
+
+  .zoo-match-card.matched{
+    cursor: default;
+    background: var(--cream);
+    box-shadow: none;
+    opacity: 0.85;
+  }
+
+  /* 🎉 Shown once every pair has been matched — gif, text, and sound are
+     all set from CONFIG.zooMatchComplete* down in the JS below */
+  .zoo-match-complete{
+    position: fixed;
+    inset: 0;
+    z-index: 71;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease both;
+  }
+  .zoo-match-complete-text{
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    margin: 0;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.85);
+    padding: 18px 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+
+  /* ============================================================
+     "OUR PLAN" TICKET — editable date/time/location details plus a
+     live countdown, shown on the celebration screen
+     ============================================================ */
+  .date-ticket{
+    margin-top: 18px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    text-align: left;
+  }
+  .date-ticket-row{
+    margin: 6px 0;
+    font-size: 0.95rem;
+    color: var(--text-main);
+  }
+  .date-ticket-label{
+    font-weight: 700;
+    color: var(--pink-deep);
+    margin-right: 4px;
+  }
+  .date-ticket-countdown{
+    margin: 12px 0 0;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-main);
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  @media (max-width: 380px){
+    .hero-gif{ width: 165px; height: 165px; }
+    .btn{ padding: 14px 26px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Soft decorative background blobs -->
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+
+  <!-- Floating hearts get injected here by JS -->
+  <div id="hearts-container"></div>
+
+  <!-- Confetti pieces get injected here by JS -->
+  <div id="confetti-container"></div>
+
+  <!-- 🖼️ Cursor-following image — hidden until the "No" button fully
+       vanishes. Its src and size are set from CONFIG.followerImageSrc /
+       CONFIG.followerImageSize down in the script. -->
+  <img id="cursor-follower" class="cursor-follower hidden" src="" alt="" />
+
+  <div class="page-stack">
+
+    <div class="portal-row" id="portal-row">
+
+      <!-- 🐭 Hidden until "Yes" is clicked — then appears above the card.
+           Click it to open the full-screen mouse-popping room. -->
+      <button
+        id="mouse-portal-btn"
+        class="mouse-portal-btn hidden"
+        type="button"
+        aria-label="Open the mouse popping room"
+      >🐭</button>
+
+      <!-- 💖 Hidden until the mouse-popping room is fully finished —
+           then appears above the card too. Click it to open the heart room. -->
+      <button
+        id="heart-portal-btn"
+        class="heart-portal-btn hidden"
+        type="button"
+        aria-label="Open the heart room"
+      >❤️</button>
+
+      <!-- 🦒 Hidden until the heart room is fully finished — then appears
+           above the card too. Click it to open the memory-match room. -->
+      <button
+        id="zoo-match-portal-btn"
+        class="zoo-match-portal-btn hidden"
+        type="button"
+        aria-label="Open the zoo animal memory match room"
+      >🦒</button>
+
+    </div>
+
+    <main class="card">
+
+    <!-- ================= QUESTION SCREEN ================= -->
+    <section id="question-screen" class="screen">
+
+      <!-- 🖼️ REPLACE THIS: swap the src below with your own cute GIF URL -->
+      <img
+        id="hero-gif"
+        class="hero-gif"
+        src="https://i.giphy.com/aCSURh6OnUyXdOuYcq.webp"
+        alt="A cute animated GIF"
+      />
+
+      <!-- ✏️ REPLACE THIS: edit the question text directly here (use \n in the JS version below if you generate it dynamically) -->
+      <h1 class="question-text" id="question-text">Hi love ❤️
+Would you like to go to the zoo with me this Friday? 🦁🐼🐵</h1>
+
+      <div class="button-row" id="button-row">
+        <button class="btn btn-yes" id="yes-btn" type="button">🐱 Yea!</button>
+        <button class="btn btn-no" id="no-btn" type="button">😿 No.</button>
+      </div>
+    </section>
+
+    <!-- ================= CELEBRATION SCREEN ================= -->
+    <section id="celebration-screen" class="screen hidden">
+
+      <!-- 🎉 REPLACE THIS: swap the src below with your own celebratory GIF URL -->
+      <img
+        id="celebration-gif"
+        class="hero-gif"
+        src="https://i.giphy.com/TbRkubcqlgBksEqMv4.webp"
+        alt="A celebratory animated GIF"
+      />
+
+      <p class="celebration-text">Yippeee!!❤️ Finally i can see my mouse!! 🐭👉❤️     </p>
+      <p class="subtext">───────────────────────────── Please text when you want to go exactly! </p>
+
+      <!-- 🎟️ Editable "our plan" ticket — update the text below once the
+           date/time/location are locked in, and set CONFIG.zooDateTarget
+           in the script to power the live countdown -->
+      <div class="date-ticket" id="date-ticket">
+        <p class="date-ticket-row"><span class="date-ticket-label">📅 When:</span> <span id="date-ticket-when"></span></p>
+        <p class="date-ticket-row"><span class="date-ticket-label">📍 Where:</span> <span id="date-ticket-where"></span></p>
+        <p class="date-ticket-row"><span class="date-ticket-label">🎒 Bring:</span> <span id="date-ticket-bring"></span></p>
+        <p class="date-ticket-countdown" id="date-ticket-countdown"></p>
+      </div>
+
+      <!-- 📅 REPLACE THIS: paste your Google Calendar event link into the href below -->
+      <a
+        id="calendar-btn"
+        class="btn btn-calendar"
+        href="https://calendar.app.google/iY73HC9cG5E6UwUaA"
+        target="_blank"
+        rel="noopener noreferrer"
+      >📅 Add to Calendar</a>
+    </section>
+
+  </main>
+
+  </div>
+
+  <!-- ================= MOUSE POPPING GAME (full-screen) ================= -->
+  <section id="mouse-game-screen" class="mouse-game-screen hidden" aria-label="Mouse popping room">
+    <button id="mouse-game-back" class="mouse-game-back" type="button">← Back</button>
+    <div id="mouse-grid" class="mouse-grid"></div>
+
+    <!-- 🎉 Shown once all mice are popped — gif, text, and sound are all
+         set from CONFIG.mouseGameComplete* down in the script -->
+    <div id="mouse-game-complete" class="mouse-game-complete hidden">
+      <img id="mouse-game-complete-gif" class="hero-gif" src="" alt="Congratulations" />
+      <p id="mouse-game-complete-text" class="mouse-game-complete-text"></p>
+      <button id="mouse-game-replay" class="mouse-game-replay" type="button">Pop again</button>
+    </div>
+  </section>
+
+  <!-- ================= HEART MINIGAME (full-screen) ================= -->
+  <section id="heart-game-screen" class="heart-game-screen hidden" aria-label="Heart room">
+    <button id="heart-game-back" class="heart-game-back" type="button">← Back</button>
+    <button id="heart-game-heart" class="heart-game-heart" type="button" aria-label="Tap the heart">❤️</button>
+
+    <!-- 💌 Shown once the heart has been clicked CONFIG.heartGameMaxClicks
+         times — text is set from CONFIG.heartGameCompleteText in the script -->
+    <div id="heart-game-complete" class="heart-game-complete hidden">
+      <p id="heart-game-complete-text" class="heart-game-complete-text"></p>
+    </div>
+  </section>
+
+  <!-- ================= ZOO ANIMAL MEMORY MATCH (full-screen) ================= -->
+  <section id="zoo-match-screen" class="zoo-match-screen hidden" aria-label="Zoo animal memory match room">
+    <button id="zoo-match-back" class="zoo-match-back" type="button">← Back</button>
+    <div id="zoo-match-grid" class="zoo-match-grid"></div>
+
+    <!-- 🎉 Shown once every pair is matched — gif, text, and sound are all
+         set from CONFIG.zooMatchComplete* down in the script -->
+    <div id="zoo-match-complete" class="zoo-match-complete hidden">
+      <img id="zoo-match-complete-gif" class="hero-gif" src="" alt="Congratulations" />
+      <p id="zoo-match-complete-text" class="zoo-match-complete-text"></p>
+    </div>
+  </section>
+
+  <!-- 🔊 REPLACE THIS: swap the src below with your own success sound file -->
+  <audio id="success-sound" preload="auto">
+    <source src="trumpet.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 😿 REPLACE THIS: swap the src below with your own sad sound file — it
+       plays once the "No" button has fully shrunk away and disappeared -->
+  <audio id="sad-sound" preload="auto">
+    <source src="saj.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 🎉 Congratulations sound for the mouse-popping game — src is set from
+       CONFIG.mouseGameCompleteSoundSrc down in the script, so edit it there -->
+  <audio id="mouse-game-complete-sound" preload="auto"></audio>
+
+  <!-- 💌 Sound for the heart minigame's "I still love you!" reveal — src is
+       set from CONFIG.heartGameCompleteSoundSrc down in the script -->
+  <audio id="heart-game-complete-sound" preload="auto"></audio>
+
+  <!-- 🎉 Congratulations sound for the zoo animal memory match — src is set
+       from CONFIG.zooMatchCompleteSoundSrc down in the script -->
+  <audio id="zoo-match-complete-sound" preload="auto"></audio>
+
+  <script>
+  /* ================================================================
+     CONFIG — the four things you're most likely to want to edit
+     ================================================================ */
+  const CONFIG = {
+    // ✏️ Change the question shown at the top (use "\n" for a line break)
+    questionText: "❤️ Hi Mouser! ❤️\n────────\nI really miss you, so how about we finally go to the zoo this Saturday?\n🐁🐹🐈",
+
+    // How many times the "No" button can be clicked before it vanishes
+    noButtonMaxClicks: 5,
+
+    // How much smaller the "No" button gets on each click (20% smaller)
+    noButtonShrinkFactor: 0.8,
+
+    // ✏️ Edit these — the "No" button shows the next line each time it's
+    // clicked (1st click shows the first line, 2nd click the second, etc.)
+    noButtonTexts: [
+      "You sure? 😿",
+      "Supa sure? 😿",
+      "Please? 😿",
+      "Moouse!? 😿",
+      "Whyyy!! 😿"
+    ],
+
+    confettiDurationMs: 5000,
+    confettiPieceCount: 800,
+
+    // 🔊 Volume of the trumpet/success sound when "Yes" is clicked (0 = silent, 1 = full volume)
+    successSoundVolume: 0.4,
+
+    // 😿 Volume of the sad sound once the "No" button fully disappears (0 = silent, 1 = full volume)
+    sadSoundVolume: 0.4,
+
+    // 🔈 Volume of the short click sound every button makes (0 = silent, 1 = full volume)
+    clickSoundVolume: 0.12,
+
+    // 🖼️ PASTE YOUR PNG HERE — once the "No" button fully disappears, this
+    // image starts following the cursor. Paste either:
+    //   • a filename/path sitting next to this HTML file, e.g. "mouse.png"
+    //   • a full URL, e.g. "https://example.com/mouse.png"
+    //   • a base64 data URI, e.g. "data:image/png;base64,iVBORw0KG..."
+    followerImageSrc: "cav.png",
+
+    // 📏 Size of the cursor-following image in pixels (width & height, since
+    // it's shown as a square). Bump this up or down to taste.
+    followerImageSize: 90,
+
+    // 🐢 How closely the image tracks the cursor each frame: a value from
+    // 0 to 1. Smaller = more delay/lag (floatier, smoother trail).
+    // Larger = snappier, closer to the cursor. 0.08–0.15 feels "smooth".
+    followerSmoothing: 0.1,
+
+    // 🐭 How many mice wide/tall the popping-game array is (7 = 7x7 = 49 mice)
+    mouseGridSize: 7,
+
+    // 🎉 REPLACE THIS: swap in your own congratulations GIF URL — shown
+    // once every mouse in the array has been popped
+    mouseGameCompleteGifSrc: "https://i.giphy.com/0YmBoPL8p6xH43eNRT.webp",
+
+    // ✏️ Edit the congratulations message shown alongside that GIF
+    mouseGameCompleteText: "Yay!! U da real mouse! 🐭🎉",
+
+    // 🔊 REPLACE THIS: swap in your own congratulations sound file — plays
+    // the moment the last mouse in the array is popped
+    mouseGameCompleteSoundSrc: "maus.mp3",
+
+    // 🔈 Volume of the congratulations sound (0 = silent, 1 = full volume)
+    mouseGameCompleteSoundVolume: 0.4,
+
+    // 💖 How many clicks the single heart needs before it fills the screen
+    heartGameMaxClicks: 20,
+
+    // 💖 Heart size at 0 clicks and at heartGameMaxClicks clicks, in vmin
+    // (a unit that scales with the viewport, so it stays consistent on any
+    // screen). heartGameMaxSizeVmin: 90 means the heart, its glyph, is
+    // nearly as wide/tall as the whole screen once fully grown.
+    heartGameStartSizeVmin: 12,
+    heartGameMaxSizeVmin: 90,
+
+    // ✏️ Text shown once the heart has been clicked heartGameMaxClicks times
+    heartGameCompleteText: "I can't believe Im still in love with you.",
+
+    // 🔈 Volume of the "thump" throbbing sound played on every heart click
+    // (0 = silent, 1 = full volume)
+    heartThrobSoundVolume: 0.5,
+
+    // 🔊 REPLACE THIS: swap in your own sound file — plays the moment the
+    // "I still love you!" text appears, after the heart's final click
+    heartGameCompleteSoundSrc: "fyou.mp3",
+
+    // 🔈 Volume of that sound (0 = silent, 1 = full volume)
+    heartGameCompleteSoundVolume: 0.4,
+
+    // 🦒 Zoo animal emojis used in the memory-match game — one pair of
+    // cards is made per emoji listed here. Add, remove, or swap freely;
+    // the grid resizes itself to fit however many you list.
+    zooMatchEmojis: ["🦁", "🐘", "🦒", "🦓", "🐧", "🐒", "🦋", "🐼"],
+
+    // 🃏 What a face-down card shows before it's flipped
+    zooMatchCardBack: "🐾",
+
+    // 🎉 REPLACE THIS: swap in your own GIF URL — shown once every pair
+    // has been matched
+    zooMatchCompleteGifSrc: "https://i.giphy.com/BLCHvwl9C5j1u.webp",
+
+    // ✏️ Text shown alongside that GIF
+    zooMatchCompleteText: "Yeag u did it!! 🦒🎉",
+
+    // 🔊 REPLACE THIS: swap in your own sound file — plays once every
+    // pair has been matched
+    zooMatchCompleteSoundSrc: "trumpet.mp3",
+
+    // 🔈 Volume of that sound (0 = silent, 1 = full volume)
+    zooMatchCompleteSoundVolume: 0.4,
+
+    // 🎟️ Editable details for the "our plan" ticket on the celebration
+    // screen — update these once the real date/time/location are set!
+    zooDateWhenText: " Saturday — TBD",
+    zooDateWhereText: "Városliget Zoo",
+    zooDateBringText: " An open mind",
+
+    // ⏳ REPLACE THIS with the actual date & time once it's decided, in
+    // "YYYY-MM-DDTHH:MM:SS" format (24-hour clock) — powers the live
+    // countdown shown just below the ticket details above
+    zooDateTarget: "2026-07-11T10:00:00",
+
+    // 💬 Shown instead of the countdown once zooDateTarget has arrived/passed
+    zooDateArrivedText: "It's zoo day!! 🦒🎉"
+  };
+
+  // Apply the configurable question text on load
+  document.getElementById('question-text').textContent = CONFIG.questionText;
+
+  /* ================================================================
+     BUTTON CLICK SOUND — a short, modern synthesized "tick"
+     Generated in the browser with the Web Audio API, so there's no
+     extra sound file to find, host, or link — it just works.
+     ================================================================ */
+  let clickAudioCtx = null;
+
+  function playClickSound(){
+    try {
+      // Reuse one AudioContext across all clicks; some browsers require
+      // it to be created/resumed from within a real user click, which is
+      // exactly when this function runs.
+      if (!clickAudioCtx){
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        clickAudioCtx = new AudioContextClass();
+      }
+      if (clickAudioCtx.state === 'suspended'){
+        clickAudioCtx.resume();
+      }
+
+      const ctx = clickAudioCtx;
+      const now = ctx.currentTime;
+
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      // A quick downward pitch blip reads as a clean, modern UI "tick"
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(820, now);
+      oscillator.frequency.exponentialRampToValueAtTime(420, now + 0.08);
+
+      // Fast fade so it stays subtle and short, never overlapping the next click
+      gainNode.gain.setValueAtTime(CONFIG.clickSoundVolume, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.1);
+    } catch (err) {
+      // Silently ignore if Web Audio isn't supported — page keeps working fine
+    }
+  }
+
+  // Play the click sound on every button/link styled with the .btn class
+  // (covers Yes, No, and the calendar button — and any you add later)
+  document.querySelectorAll('.btn').forEach((el) => {
+    el.addEventListener('click', playClickSound);
+  });
+
+  /* ================================================================
+     FLOATING HEARTS — ambient background animation
+     ================================================================ */
+  function createFloatingHearts(count = 38){
+    const container = document.getElementById('hearts-container');
+    const emojis = ['💕', '💖', '💗', '🦁', '🐻', '🦊','🦝', '🐼', '🐁', '🐹', '🐭'];
+
+    for (let i = 0; i < count; i++){
+      const heart = document.createElement('span');
+      heart.className = 'floating-heart';
+      heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+      const size = 14 + Math.random() * 22;           // 14px–36px
+      const left = Math.random() * 100;                // 0%–100% across
+      const duration = 6 + Math.random() * 5;          // 9s–19s float
+      const delay = Math.random() * 10;                 // stagger start times
+
+      heart.style.left = `${left}%`;
+      heart.style.fontSize = `${size}px`;
+      heart.style.animationDuration = `${duration}s`;
+      heart.style.animationDelay = `${delay}s`;
+
+      container.appendChild(heart);
+    }
+  }
+  createFloatingHearts();
+
+  /* ================================================================
+     CURSOR-FOLLOWING IMAGE — trails the mouse (or finger) with a
+     slight delay, using simple "lerp" smoothing each animation frame.
+     Stays hidden until activateCursorFollower() is called, which
+     happens once the "No" button has fully faded away below.
+     ================================================================ */
+  const follower = document.getElementById('cursor-follower');
+
+  // Apply the adjustable size + image from CONFIG
+  follower.src = CONFIG.followerImageSrc;
+  follower.style.width = `${CONFIG.followerImageSize}px`;
+  follower.style.height = `${CONFIG.followerImageSize}px`;
+
+  // If CONFIG.followerImageSrc hasn't been swapped for a real image yet,
+  // fail quietly instead of showing a broken-image icon on screen
+  follower.addEventListener('error', () => {
+    follower.classList.add('hidden');
+  });
+
+  // Target position (where the cursor/finger actually is) vs. current
+  // position (where the image is drawn) — easing between the two on
+  // every frame is what creates the smooth, slightly-lagging trail.
+  let targetX = window.innerWidth / 2;
+  let targetY = window.innerHeight / 2;
+  let currentX = targetX;
+  let currentY = targetY;
+  let followerActive = false;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = e.clientX;
+    targetY = e.clientY;
+  });
+
+  // Basic touch support too, so it still does something fun on phones
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length > 0){
+      targetX = e.touches[0].clientX;
+      targetY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  function animateFollower(){
+    // Move a fraction of the remaining distance each frame — this is
+    // the "delay" effect. Smaller CONFIG.followerSmoothing = more lag.
+    currentX += (targetX - currentX) * CONFIG.followerSmoothing;
+    currentY += (targetY - currentY) * CONFIG.followerSmoothing;
+
+    follower.style.left = `${currentX}px`;
+    follower.style.top = `${currentY}px`;
+
+    requestAnimationFrame(animateFollower);
+  }
+  requestAnimationFrame(animateFollower);
+
+  function activateCursorFollower(){
+    if (followerActive) return;
+    followerActive = true;
+
+    // Snap it to the current cursor spot first so it doesn't fly in
+    // from the center of the screen the moment it appears
+    currentX = targetX;
+    currentY = targetY;
+
+    follower.classList.remove('hidden');
+    // Fade the opacity in on the next frame (so the transition actually plays)
+    requestAnimationFrame(() => follower.classList.add('visible'));
+  }
+
+  /* ================================================================
+     "NO" BUTTON — stays perfectly in place, just shrinks smaller and
+     smaller with each click until it's gone after the 5th click
+     ================================================================ */
+  const noBtn = document.getElementById('no-btn');
+  const yesBtn = document.getElementById('yes-btn');
+  const sadSound = document.getElementById('sad-sound');
+
+  let noClicks = 0;
+  let noScale = 1;
+
+  noBtn.addEventListener('click', () => {
+    noClicks++;
+
+    // Swap in the next line of text from CONFIG.noButtonTexts
+    const nextText = CONFIG.noButtonTexts[noClicks - 1];
+    if (nextText){
+      noBtn.textContent = nextText;
+    }
+
+    // Shrink around its own center — since we only ever change `transform`
+    // (never top/left/position), the button's layout space in the button
+    // row never changes, so it stays centered right where it started.
+    noScale *= CONFIG.noButtonShrinkFactor;
+    noBtn.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    noBtn.style.transform = `scale(${noScale})`;
+
+    if (noClicks >= CONFIG.noButtonMaxClicks){
+      // It's now tiny — fade the last bit of it away and remove it for good
+      noBtn.style.opacity = '0';
+      noBtn.addEventListener('transitionend', () => {
+        noBtn.classList.add('hidden');
+        // The "No" button is fully gone — send in the cursor-following image
+        activateCursorFollower();
+
+        // Play a sad sound now that "No" has fully vanished
+        sadSound.currentTime = 0;
+        sadSound.volume = CONFIG.sadSoundVolume;
+        sadSound.play().catch(() => {
+          // Silently ignore if the placeholder sound can't load/play; page keeps working fine
+        });
+      }, { once: true });
+
+      // Make "Yes" feel a little more inviting
+      yesBtn.classList.add('btn-yes--eager');
+    }
+  });
+
+  /* ================================================================
+     "YES" BUTTON — reveals the celebration screen
+     ================================================================ */
+  const questionScreen = document.getElementById('question-screen');
+  const celebrationScreen = document.getElementById('celebration-screen');
+  const successSound = document.getElementById('success-sound');
+
+  yesBtn.addEventListener('click', () => {
+    questionScreen.classList.add('hidden');
+    celebrationScreen.classList.remove('hidden');
+    mousePortalBtn.classList.remove('hidden');
+
+    // Try to play the success sound — browsers allow this since it's triggered by a click
+    successSound.currentTime = 0;
+    successSound.volume = CONFIG.successSoundVolume;
+    successSound.play().catch(() => {
+      // Silently ignore if the placeholder sound can't load/play; page keeps working fine
+    });
+
+    launchConfetti();
+  });
+
+  /* ================================================================
+     CONFETTI — a short celebratory burst
+     ================================================================ */
+  function launchConfetti(){
+    const container = document.getElementById('confetti-container');
+    const colors = ['#ff8fb3', '#ffd7e6', '#cdeaf9', '#a9dcf2', '#fff2c4', '#ffffff'];
+
+    // Spread pieces across the whole shower window so new confetti keeps
+    // appearing the entire time, instead of one quick wave that clears out
+    const showerWindowSeconds = CONFIG.confettiDurationMs / 1000;
+
+    for (let i = 0; i < CONFIG.confettiPieceCount; i++){
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+
+      const size = 8 + Math.random() * 8;
+      const fallDuration = 3 + Math.random() * 0;
+      const delay = Math.random() * showerWindowSeconds; // staggered across the full window
+
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.width = `${size}px`;
+      piece.style.height = `${size * 0.4}px`;
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = `${fallDuration}s`;
+      piece.style.animationDelay = `${delay}s`;
+
+      container.appendChild(piece);
+    }
+
+    // Clean up a bit after the very last piece would finish falling,
+    // so nothing gets cut off mid-fall
+    setTimeout(() => { container.innerHTML = ''; }, CONFIG.confettiDurationMs + 3200);
+  }
+
+  /* ================================================================
+     🐭 MOUSE POPPING GAME — a fixed-size array of poppable mice in the
+     middle of the screen, opened by clicking the mouse emoji that
+     appears above the card once you've said Yes. Every pop plays a
+     short, satisfying synthesized "pop" sound (same trick as the
+     button click sound above — no audio file needed).
+     ================================================================ */
+  const mousePortalBtn        = document.getElementById('mouse-portal-btn');
+  const mouseGameScreen       = document.getElementById('mouse-game-screen');
+  const mouseGameBack         = document.getElementById('mouse-game-back');
+  const mouseGrid             = document.getElementById('mouse-grid');
+  const mouseGameComplete     = document.getElementById('mouse-game-complete');
+  const mouseGameCompleteGif  = document.getElementById('mouse-game-complete-gif');
+  const mouseGameCompleteText = document.getElementById('mouse-game-complete-text');
+  const mouseGameCompleteSound = document.getElementById('mouse-game-complete-sound');
+  const mouseGameReplay       = document.getElementById('mouse-game-replay');
+
+  // Apply the configurable congratulations gif/text/sound on load
+  mouseGameCompleteGif.src = CONFIG.mouseGameCompleteGifSrc;
+  mouseGameCompleteText.textContent = CONFIG.mouseGameCompleteText;
+  mouseGameCompleteSound.src = CONFIG.mouseGameCompleteSoundSrc;
+
+  // Keep the grid's CSS column/row count in sync with CONFIG.mouseGridSize
+  mouseGrid.style.gridTemplateColumns = `repeat(${CONFIG.mouseGridSize}, clamp(36px, 10vw, 58px))`;
+  mouseGrid.style.gridTemplateRows = `repeat(${CONFIG.mouseGridSize}, clamp(36px, 10vw, 58px))`;
+
+  let mousePoppedCount = 0;
+  let mouseTotalCount = 0;
+
+  function playPopSound(){
+    try {
+      // Reuses the same AudioContext as the button click sound
+      if (!clickAudioCtx){
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        clickAudioCtx = new AudioContextClass();
+      }
+      if (clickAudioCtx.state === 'suspended'){
+        clickAudioCtx.resume();
+      }
+
+      const ctx = clickAudioCtx;
+      const now = ctx.currentTime;
+
+      // Slight random pitch variation per pop so a whole grid of mice
+      // doesn't sound identical and repetitive
+      const startFreq = 500 + Math.random() * 260;
+
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(startFreq, now);
+      oscillator.frequency.exponentialRampToValueAtTime(startFreq * 0.35, now + 0.09);
+
+      // Quick punchy envelope — snappy attack, fast decay, reads as a "pop"
+      gainNode.gain.setValueAtTime(0.0001, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.35, now + 0.012);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.12);
+    } catch (err) {
+      // Silently ignore if Web Audio isn't supported — page keeps working fine
+    }
+  }
+
+  function popMouse(cell){
+    if (cell.classList.contains('popped')) return;
+    cell.classList.add('popped');
+    playPopSound();
+
+    mousePoppedCount++;
+    if (mousePoppedCount >= mouseTotalCount){
+      setTimeout(() => {
+        mouseGameComplete.classList.remove('hidden');
+
+        // The mouse minigame is fully finished — reveal the heart emoji
+        // above the card too, alongside the mouse emoji
+        heartPortalBtn.classList.remove('hidden');
+
+        // Play the congratulations sound now that every mouse is popped
+        mouseGameCompleteSound.currentTime = 0;
+        mouseGameCompleteSound.volume = CONFIG.mouseGameCompleteSoundVolume;
+        mouseGameCompleteSound.play().catch(() => {
+          // Silently ignore if the placeholder sound can't load/play; page keeps working fine
+        });
+      }, 350);
+    }
+  }
+
+  function buildMouseGrid(){
+    mouseGrid.innerHTML = '';
+    mouseGameComplete.classList.add('hidden');
+    mousePoppedCount = 0;
+
+    // Fixed-size array (CONFIG.mouseGridSize x CONFIG.mouseGridSize) centered
+    // in the middle of the screen — not filling the whole viewport
+    mouseTotalCount = CONFIG.mouseGridSize * CONFIG.mouseGridSize;
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < mouseTotalCount; i++){
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'mouse-cell';
+      cell.textContent = '🐭';
+      cell.setAttribute('aria-label', 'Pop mouse');
+      cell.addEventListener('click', () => popMouse(cell));
+      fragment.appendChild(cell);
+    }
+    mouseGrid.appendChild(fragment);
+  }
+
+  mousePortalBtn.addEventListener('click', () => {
+    playClickSound();
+    buildMouseGrid();
+    mouseGameScreen.classList.remove('hidden');
+  });
+
+  mouseGameBack.addEventListener('click', () => {
+    playClickSound();
+    mouseGameScreen.classList.add('hidden');
+  });
+
+  mouseGameReplay.addEventListener('click', () => {
+    playClickSound();
+    buildMouseGrid();
+  });
+
+  /* ================================================================
+     💖 HEART MINIGAME — a single heart in the middle of the screen.
+     Every click makes it throb (a quick pulse animation) and grow a
+     little bigger. After CONFIG.heartGameMaxClicks clicks it's nearly
+     full-screen, and a congratulations text fades in over it.
+     ================================================================ */
+  const heartPortalBtn         = document.getElementById('heart-portal-btn');
+  const heartGameScreen        = document.getElementById('heart-game-screen');
+  const heartGameBack          = document.getElementById('heart-game-back');
+  const heartGameHeart         = document.getElementById('heart-game-heart');
+  const heartGameComplete      = document.getElementById('heart-game-complete');
+  const heartGameCompleteText  = document.getElementById('heart-game-complete-text');
+  const heartGameCompleteSound = document.getElementById('heart-game-complete-sound');
+
+  // Apply the configurable completion text and sound on load
+  heartGameCompleteText.textContent = CONFIG.heartGameCompleteText;
+  heartGameCompleteSound.src = CONFIG.heartGameCompleteSoundSrc;
+
+  let heartClicks = 0;
+
+  function playHeartThrobSound(){
+    try {
+      // Reuses the same AudioContext as the button click / pop sounds
+      if (!clickAudioCtx){
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        clickAudioCtx = new AudioContextClass();
+      }
+      if (clickAudioCtx.state === 'suspended'){
+        clickAudioCtx.resume();
+      }
+
+      const ctx = clickAudioCtx;
+      const now = ctx.currentTime;
+
+      // A single low, quick "thump" — a deep sine tone with a fast pitch
+      // drop and punchy envelope, so a rapid run of clicks reads as a
+      // throbbing heartbeat rather than individual beeps
+      function thump(startTime, freq, peakGain, duration){
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        oscillator.frequency.exponentialRampToValueAtTime(freq * 0.6, startTime + duration);
+
+        gainNode.gain.setValueAtTime(0.0001, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(peakGain, startTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.02);
+      }
+
+      // "Lub" then a slightly softer, lower "dub" right after — a simple
+      // two-beat throb per click
+      thump(now, 95, CONFIG.heartThrobSoundVolume, 0.16);
+      thump(now + 0.15, 78, CONFIG.heartThrobSoundVolume * 0.7, 0.14);
+    } catch (err) {
+      // Silently ignore if Web Audio isn't supported — page keeps working fine
+    }
+  }
+
+  function resetHeartGame(){
+    heartClicks = 0;
+    heartGameComplete.classList.add('hidden');
+    heartGameHeart.classList.remove('throb');
+    heartGameHeart.style.fontSize = `${CONFIG.heartGameStartSizeVmin}vmin`;
+  }
+
+  function growHeart(){
+    heartClicks++;
+    playHeartThrobSound();
+
+    // Grows from heartGameStartSizeVmin up to heartGameMaxSizeVmin, reaching
+    // full size right at heartGameMaxClicks and staying there after that
+    const clampedClicks = Math.min(heartClicks, CONFIG.heartGameMaxClicks);
+    const progress = clampedClicks / CONFIG.heartGameMaxClicks;
+    const sizeVmin = CONFIG.heartGameStartSizeVmin +
+      (CONFIG.heartGameMaxSizeVmin - CONFIG.heartGameStartSizeVmin) * progress;
+    heartGameHeart.style.fontSize = `${sizeVmin}vmin`;
+
+    // Re-trigger the throb animation every click, even back-to-back —
+    // removing the class, forcing a reflow, then re-adding it lets the
+    // CSS animation restart from the beginning each time
+    heartGameHeart.classList.remove('throb');
+    void heartGameHeart.offsetWidth;
+    heartGameHeart.classList.add('throb');
+
+    if (heartClicks === CONFIG.heartGameMaxClicks){
+      setTimeout(() => {
+        heartGameComplete.classList.remove('hidden');
+
+        // The heart minigame is fully finished — reveal the giraffe emoji
+        // above the card too, alongside the mouse and heart emoji
+        zooMatchPortalBtn.classList.remove('hidden');
+
+        // Play the congratulations sound now that the heart's fully grown
+        heartGameCompleteSound.currentTime = 0;
+        heartGameCompleteSound.volume = CONFIG.heartGameCompleteSoundVolume;
+        heartGameCompleteSound.play().catch(() => {
+          // Silently ignore if the placeholder sound can't load/play; page keeps working fine
+        });
+      }, 300);
+    }
+  }
+
+  heartGameHeart.addEventListener('click', growHeart);
+
+  heartPortalBtn.addEventListener('click', () => {
+    playClickSound();
+    resetHeartGame();
+    heartGameScreen.classList.remove('hidden');
+  });
+
+  heartGameBack.addEventListener('click', () => {
+    playClickSound();
+    heartGameScreen.classList.add('hidden');
+  });
+
+  /* ================================================================
+     🎟️ "OUR PLAN" TICKET — applies the configurable when/where/bring
+     text and runs a live countdown to CONFIG.zooDateTarget, shown on
+     the celebration screen.
+     ================================================================ */
+  document.getElementById('date-ticket-when').textContent = CONFIG.zooDateWhenText;
+  document.getElementById('date-ticket-where').textContent = CONFIG.zooDateWhereText;
+  document.getElementById('date-ticket-bring').textContent = CONFIG.zooDateBringText;
+
+  const dateTicketCountdown = document.getElementById('date-ticket-countdown');
+
+  function updateDateCountdown(){
+    const targetTime = new Date(CONFIG.zooDateTarget).getTime();
+
+    // If the date hasn't been set to something parseable yet, just hide
+    // the countdown line rather than showing "Invalid Date"
+    if (Number.isNaN(targetTime)){
+      dateTicketCountdown.textContent = '';
+      return;
+    }
+
+    const diff = targetTime - Date.now();
+
+    if (diff <= 0){
+      dateTicketCountdown.textContent = CONFIG.zooDateArrivedText;
+      return;
+    }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    dateTicketCountdown.textContent =
+      `⏳ ${days}d ${hours}h ${minutes}m ${seconds}s until our zoo date!`;
+  }
+
+  updateDateCountdown();
+  setInterval(updateDateCountdown, 1000);
+
+  /* ================================================================
+     🦒 ZOO ANIMAL MEMORY MATCH — flip cards in the middle of the
+     screen, opened from the giraffe emoji that appears above the card
+     once the heart minigame is finished. Flip two cards at a time;
+     matching pairs stay face-up, mismatches flip back after a beat.
+     ================================================================ */
+  const zooMatchPortalBtn       = document.getElementById('zoo-match-portal-btn');
+  const zooMatchScreen          = document.getElementById('zoo-match-screen');
+  const zooMatchBack            = document.getElementById('zoo-match-back');
+  const zooMatchGrid            = document.getElementById('zoo-match-grid');
+  const zooMatchComplete        = document.getElementById('zoo-match-complete');
+  const zooMatchCompleteGif     = document.getElementById('zoo-match-complete-gif');
+  const zooMatchCompleteText    = document.getElementById('zoo-match-complete-text');
+  const zooMatchCompleteSound   = document.getElementById('zoo-match-complete-sound');
+
+  // Apply the configurable congratulations gif/text/sound on load
+  zooMatchCompleteGif.src = CONFIG.zooMatchCompleteGifSrc;
+  zooMatchCompleteText.textContent = CONFIG.zooMatchCompleteText;
+  zooMatchCompleteSound.src = CONFIG.zooMatchCompleteSoundSrc;
+
+  let zooMatchFlipped = [];      // currently face-up, unmatched cards (max 2)
+  let zooMatchMatchedCount = 0;
+  let zooMatchTotalPairs = 0;
+  let zooMatchBusy = false;      // true while a mismatched pair is being shown/reset
+
+  function playMatchSound(){
+    try {
+      // Reuses the same AudioContext as the other synthesized sounds
+      if (!clickAudioCtx){
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        clickAudioCtx = new AudioContextClass();
+      }
+      if (clickAudioCtx.state === 'suspended'){
+        clickAudioCtx.resume();
+      }
+
+      const ctx = clickAudioCtx;
+      const now = ctx.currentTime;
+
+      // Two bright, quick ascending notes — reads as a cheerful "match!" chime
+      function note(startTime, freq, duration){
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+
+        gainNode.gain.setValueAtTime(0.0001, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.3, startTime + 0.015);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.02);
+      }
+
+      note(now, 660, 0.14);
+      note(now + 0.12, 880, 0.18);
+    } catch (err) {
+      // Silently ignore if Web Audio isn't supported — page keeps working fine
+    }
+  }
+
+  function shuffleZooCards(array){
+    for (let i = array.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // Removes then re-adds the "flipping" class (forcing a reflow in between)
+  // so the flip animation can replay on a card it's already played on before
+  function playZooFlipAnimation(card){
+    card.classList.remove('flipping');
+    void card.offsetWidth;
+    card.classList.add('flipping');
+  }
+
+  function buildZooMatchGrid(){
+    zooMatchGrid.innerHTML = '';
+    zooMatchGrid.classList.remove('hidden');
+    zooMatchComplete.classList.add('hidden');
+    zooMatchFlipped = [];
+    zooMatchMatchedCount = 0;
+    zooMatchBusy = false;
+
+    const emojiPairs = shuffleZooCards([...CONFIG.zooMatchEmojis, ...CONFIG.zooMatchEmojis]);
+    zooMatchTotalPairs = CONFIG.zooMatchEmojis.length;
+
+    // Fit the cards into a roughly-square grid regardless of how many
+    // emojis are listed in CONFIG.zooMatchEmojis
+    const cols = Math.ceil(Math.sqrt(emojiPairs.length));
+    zooMatchGrid.style.gridTemplateColumns = `repeat(${cols}, clamp(46px, 11vw, 72px))`;
+
+    const fragment = document.createDocumentFragment();
+    emojiPairs.forEach((emoji) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'zoo-match-card';
+      card.textContent = CONFIG.zooMatchCardBack;
+      card.dataset.emoji = emoji;
+      card.setAttribute('aria-label', 'Flip card');
+      card.addEventListener('click', () => flipZooCard(card));
+      fragment.appendChild(card);
+    });
+    zooMatchGrid.appendChild(fragment);
+  }
+
+  function flipZooCard(card){
+    if (zooMatchBusy) return;
+    if (card.classList.contains('matched')) return;
+    if (zooMatchFlipped.includes(card)) return;
+    if (zooMatchFlipped.length >= 2) return;
+
+    playClickSound();
+    playZooFlipAnimation(card);
+    setTimeout(() => { card.textContent = card.dataset.emoji; }, 150);
+
+    zooMatchFlipped.push(card);
+
+    if (zooMatchFlipped.length === 2){
+      zooMatchBusy = true;
+      const [first, second] = zooMatchFlipped;
+
+      setTimeout(() => {
+        if (first.dataset.emoji === second.dataset.emoji){
+          first.classList.add('matched');
+          second.classList.add('matched');
+          playMatchSound();
+          zooMatchMatchedCount++;
+          zooMatchFlipped = [];
+          zooMatchBusy = false;
+
+          if (zooMatchMatchedCount >= zooMatchTotalPairs){
+            setTimeout(() => {
+              zooMatchGrid.classList.add('hidden');
+              zooMatchComplete.classList.remove('hidden');
+              zooMatchCompleteSound.currentTime = 0;
+              zooMatchCompleteSound.volume = CONFIG.zooMatchCompleteSoundVolume;
+              zooMatchCompleteSound.play().catch(() => {
+                // Silently ignore if the placeholder sound can't load/play; page keeps working fine
+              });
+            }, 300);
+          }
+        } else {
+          playZooFlipAnimation(first);
+          playZooFlipAnimation(second);
+          setTimeout(() => {
+            first.textContent = CONFIG.zooMatchCardBack;
+            second.textContent = CONFIG.zooMatchCardBack;
+          }, 150);
+          setTimeout(() => {
+            zooMatchFlipped = [];
+            zooMatchBusy = false;
+          }, 350);
+        }
+      }, 600);
+    }
+  }
+
+  zooMatchPortalBtn.addEventListener('click', () => {
+    playClickSound();
+    buildZooMatchGrid();
+    zooMatchScreen.classList.remove('hidden');
+  });
+
+  zooMatchBack.addEventListener('click', () => {
+    playClickSound();
+    zooMatchScreen.classList.add('hidden');
+  });
+  </script>
+
+</body>
+</html>
